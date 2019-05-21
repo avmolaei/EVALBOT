@@ -2,7 +2,7 @@
 ;Clock
 SYSCTL_PERIPH_GPIOF EQU		0x400FE108
 	
-;Données
+;DonnÃ©es
 GPIO_PORTD_BASE		EQU		0x40024000	;SYSCTL_RCGC2_R : pour enable clock (p291 datasheet de lm3s9b92.pdf)
 
 ;Direction
@@ -23,15 +23,15 @@ GPIO_PUR			EQU		0x510
 		IMPORT	MOTEUR_INIT					; initialise les moteurs (configure les pwms + GPIO)
 		
 		IMPORT	MOTEUR_DROIT_ON				; activer le moteur droit
-		IMPORT  MOTEUR_DROIT_OFF			; déactiver le moteur droit
+		IMPORT  MOTEUR_DROIT_OFF			; dÃ©activer le moteur droit
 		IMPORT  MOTEUR_DROIT_AVANT			; moteur droit tourne vers l'avant
-		IMPORT  MOTEUR_DROIT_ARRIERE		; moteur droit tourne vers l'arrière
+		IMPORT  MOTEUR_DROIT_ARRIERE		; moteur droit tourne vers l'arriÃ¨re
 		IMPORT  MOTEUR_DROIT_INVERSE		; inverse le sens de rotation du moteur droit
 		
 		IMPORT	MOTEUR_GAUCHE_ON			; activer le moteur gauche
-		IMPORT  MOTEUR_GAUCHE_OFF			; déactiver le moteur gauche
+		IMPORT  MOTEUR_GAUCHE_OFF			; dÃ©activer le moteur gauche
 		IMPORT  MOTEUR_GAUCHE_AVANT			; moteur gauche tourne vers l'avant
-		IMPORT  MOTEUR_GAUCHE_ARRIERE		; moteur gauche tourne vers l'arrière
+		IMPORT  MOTEUR_GAUCHE_ARRIERE		; moteur gauche tourne vers l'arriÃ¨re
 		IMPORT  MOTEUR_GAUCHE_INVERSE		; inverse le sens de rotation du moteur gauche
 
 
@@ -45,7 +45,7 @@ PORT7				EQU		0x02 ; SW 2  - Lignes 7 Port D
 		
 __main
 		;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;CONFIGURATION DE LA CLOCK;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;clock sur GPIO F où sont branchés les leds et GPIO D sur ;lequel sont branchés les SW : 0x38 == 000101000)
+;clock sur GPIO F oÃ¹ sont branchÃ©s les leds et GPIO D sur ;lequel sont branchÃ©s les SW : 0x38 == 000101000)
 ; Enable the Port F and D,  peripheral clock by setting the ;corresponding bits,(p291 datasheet de lm3s9B96.pdf), ;GPIO::FEDCBA)
 			ldr r6, = SYSCTL_PERIPH_GPIOF  		
         	mov r0, #0x30			
@@ -77,17 +77,17 @@ loop
 			BL	MOTEUR_GAUCHE_AVANT
 			
 
-;Traitement qui allume/éteint la LED1 en fonction de l'état  ;du SW1, la LED1 est initialement allumée, et s'éteint si SW1 ;est activé = appuyé
-;si switch 1 est actif (=0), on éteint la LED1
+;Traitement qui allume/Ã©teint la LED1 en fonction de l'Ã©tat  ;du SW1, la LED1 est initialement allumÃ©e, et s'Ã©teint si SW1 ;est activÃ© = appuyÃ©
+;si switch 1 est actif (=0), on Ã©teint la LED1
 			ldr r7,= GPIO_PORTD_BASE + (PORT67<<2)
 			ldr r4, [r7]				
 	
 			
-;Test des états des bumper
-; Test de l'état de b2			
+;Test des Ã©tats des bumper
+; Test de l'Ã©tat de b2			
 			cmp	r4,#0x02								
 			beq rotleft
-; Test l'état de b1			
+; Test l'Ã©tat de b1			
 			cmp r4,#0x01			
 			beq rotright
 			b	loop
@@ -105,11 +105,11 @@ rotright
 			ldr r7,= GPIO_PORTD_BASE + (PORT67<<2)
 			ldr r4, [r7]			
 			
-;Test de l'état de SW1
+;Test de l'Ã©tat de SW1
 			cmp r4,#0x40
 			beq rotleft
 			BL	WAIT
-			b	loop; Rotation à gauche de l'Evalbot		
+			b	loop; Rotation Ã  gauche de l'Evalbot		
 rotleft	
 			BL	MOTEUR_DROIT_ON
 			BL	MOTEUR_GAUCHE_ON
@@ -121,7 +121,7 @@ rotleft
 ; Lire dans R4 l'etat des SW
 			ldr r4, [r7]			
 		
-;Test de l'état de SW2
+;Test de l'Ã©tat de SW2
 			
 			cmp r4,#0x80	
 			beq rotright
@@ -130,7 +130,7 @@ rotleft
 			
 			
 			
-WAIT	ldr r1, =0xAFFFFF
+WAIT	ldr r1, =0x588888
 wait1	subs r1, #1
         bne wait1
 		BX LR
