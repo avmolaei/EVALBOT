@@ -1,0 +1,232 @@
+
+
+
+ARM Macro Assembler    Page 1 
+
+
+    1 00000000                 AREA             |.text|, CODE, READONLY
+    2 00000000         ;Clock
+    3 00000000 400FE108 
+                       SYSCTL_PERIPH_GPIOF
+                               EQU              0x400FE108
+    4 00000000         
+    5 00000000         ;Données
+    6 00000000 40024000 
+                       GPIO_PORTD_BASE
+                               EQU              0x40024000  ;SYSCTL_RCGC2_R : p
+                                                            our enable clock (p
+                                                            291 datasheet de lm
+                                                            3s9b92.pdf)
+    7 00000000         
+    8 00000000         ;Direction
+    9 00000000 00000400 
+                       GPIO_O_DIR
+                               EQU              0x400
+   10 00000000         
+   11 00000000         ;Sortie 2mA 
+   12 00000000 00000500 
+                       GPIO_O_DR2R
+                               EQU              0x500
+   13 00000000         
+   14 00000000         ;Fonction Digital
+   15 00000000 0000051C 
+                       GPIO_O_DEN
+                               EQU              0x51C
+   16 00000000         
+   17 00000000         ;Pullup
+   18 00000000 00000510 
+                       GPIO_PUR
+                               EQU              0x510
+   19 00000000                 ENTRY
+   20 00000000                 EXPORT           __main
+   21 00000000         
+   22 00000000         ;; The IMPORT command specifies that a symbol is defined
+                        in a shared object at runtime.
+   23 00000000                 IMPORT           MOTEUR_INIT ; initialise les mo
+                                                            teurs (configure le
+                                                            s pwms + GPIO)
+   24 00000000         
+   25 00000000                 IMPORT           MOTEUR_DROIT_ON ; activer le mo
+                                                            teur droit
+   26 00000000                 IMPORT           MOTEUR_DROIT_OFF ; déactiver le
+                                                             moteur droit
+   27 00000000                 IMPORT           MOTEUR_DROIT_AVANT ; moteur dro
+                                                            it tourne vers l'av
+                                                            ant
+   28 00000000                 IMPORT           MOTEUR_DROIT_ARRIERE ; moteur d
+                                                            roit tourne vers l'
+                                                            arrière
+   29 00000000                 IMPORT           MOTEUR_DROIT_INVERSE ; inverse 
+                                                            le sens de rotation
+                                                             du moteur droit
+   30 00000000         
+   31 00000000                 IMPORT           MOTEUR_GAUCHE_ON ; activer le m
+                                                            oteur gauche
+   32 00000000                 IMPORT           MOTEUR_GAUCHE_OFF ; déactiver l
+
+
+
+ARM Macro Assembler    Page 2 
+
+
+                                                            e moteur gauche
+   33 00000000                 IMPORT           MOTEUR_GAUCHE_AVANT ; moteur ga
+                                                            uche tourne vers l'
+                                                            avant
+   34 00000000                 IMPORT           MOTEUR_GAUCHE_ARRIERE ; moteur 
+                                                            gauche tourne vers 
+                                                            l'arrière
+   35 00000000                 IMPORT           MOTEUR_GAUCHE_INVERSE ; inverse
+                                                             le sens de rotatio
+                                                            n du moteur gauche
+   36 00000000         
+   37 00000000         
+   38 00000000         ; Port select
+   39 00000000         
+   40 00000000 00000003 
+                       PORT67  EQU              0x03        ; SW 1 et 2 - Ligne
+                                                            s 6 et 7 Port D
+   41 00000000 00000001 
+                       PORT6   EQU              0x01        ; SW 1  - Lignes 6 
+                                                            Port D
+   42 00000000 00000002 
+                       PORT7   EQU              0x02        ; SW 2  - Lignes 7 
+                                                            Port D
+   43 00000000         
+   44 00000000         
+   45 00000000         
+   46 00000000         __main
+   47 00000000         ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;CON
+                       FIGURATION DE LA CLOCK;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                       ;;;;;;;;;;;;;;;;;;;
+   48 00000000         ;clock sur GPIO F où sont branchés les leds et GPIO D su
+                       r ;lequel sont branchés les SW : 0x38 == 000101000)
+   49 00000000         ; Enable the Port F and D,  peripheral clock by setting 
+                       the ;corresponding bits,(p291 datasheet de lm3s9B96.pdf)
+                       , ;GPIO::FEDCBA)
+   50 00000000 4E20            ldr              r6, = SYSCTL_PERIPH_GPIOF
+   51 00000002 F04F 0030       mov              r0, #0x30
+   52 00000006 6030            str              r0, [r6]
+   53 00000008         
+   54 00000008         ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;DEL
+                       AI;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                       ;;;;;;;;;;;;;;;;;;;
+   55 00000008         ;"There must be a delay of 3 system clocks before any GP
+                       IO reg. access  (p413 datasheet de lm3s9B92.pdf)
+   56 00000008         ;tres tres important....;; pas necessaire en simu ou en 
+                       debbug ;step by step...
+   57 00000008 BF00            nop
+   58 0000000A BF00            nop
+   59 0000000C BF00            nop
+   60 0000000E         ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;CONFIG
+                       URATION PORTD PIN6;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                       ;;;;;;;;;;;;;;;;;;;
+   61 0000000E         ; Configuration du Port D - Enable Digital Function - Po
+                       rt D   
+   62 0000000E 4F1E            ldr              r7, = GPIO_PORTD_BASE+GPIO_O_DE
+N
+   63 00000010 F04F 0003       ldr              r0, = PORT67
+   64 00000014 6038            str              r0, [r7]
+   65 00000016         
+
+
+
+ARM Macro Assembler    Page 3 
+
+
+   66 00000016         ; Activer le registre des switchs, Port D   
+   67 00000016 4F1D            ldr              r7, = GPIO_PORTD_BASE+GPIO_PUR
+   68 00000018 F04F 0003       ldr              r0, = PORT67
+   69 0000001C 6038            str              r0, [r7]
+   70 0000001E         
+   71 0000001E F7FF FFFE       BL               MOTEUR_INIT
+   72 00000022         loop
+   73 00000022 F7FF FFFE       BL               MOTEUR_DROIT_ON
+   74 00000026 F7FF FFFE       BL               MOTEUR_GAUCHE_ON
+   75 0000002A         
+   76 0000002A F7FF FFFE       BL               MOTEUR_DROIT_AVANT
+   77 0000002E F7FF FFFE       BL               MOTEUR_GAUCHE_AVANT
+   78 00000032         
+   79 00000032         
+   80 00000032         ;Traitement qui allume/éteint la LED1 en fonction de l'é
+                       tat  ;du SW1, la LED1 est initialement allumée, et s'éte
+                       int si SW1 ;est activé = appuyé
+   81 00000032         ;si switch 1 est actif (=0), on éteint la LED1
+   82 00000032 4F17            ldr              r7,= GPIO_PORTD_BASE + (PORT67<
+<2)
+   83 00000034 683C            ldr              r4, [r7]
+   84 00000036         
+   85 00000036         
+   86 00000036         ;Test des états des bumper
+   87 00000036         ; Test de l'état de b2   
+   88 00000036 2C02            cmp              r4,#0x02
+   89 00000038 D011            beq              rotleft
+   90 0000003A         ; Test l'état de b1   
+   91 0000003A 2C01            cmp              r4,#0x01
+   92 0000003C D000            beq              rotright
+   93 0000003E E7F0            b                loop
+   94 00000040         
+   95 00000040         
+   96 00000040         
+   97 00000040         
+   98 00000040         rotright
+   99 00000040 F7FF FFFE       BL               MOTEUR_DROIT_ON
+  100 00000044 F7FF FFFE       BL               MOTEUR_GAUCHE_ON
+  101 00000048 F000 F800       BL               MOTEUR_GAUCHE_AVANTW
+  102 0000004C F7FF FFFE       BL               MOTEUR_DROIT_ARRIERE
+  103 00000050         
+  104 00000050         ; Lire dans R4 l'etat des SW 
+  105 00000050 4F0F            ldr              r7,= GPIO_PORTD_BASE + (PORT67<
+<2)
+  106 00000052 683C            ldr              r4, [r7]
+  107 00000054         
+  108 00000054         ;Test de l'état de SW1
+  109 00000054 2C40            cmp              r4,#0x40
+  110 00000056 D002            beq              rotleft
+  111 00000058 F000 F810       BL               WAIT
+  112 0000005C E7E1            b                loop        ; Rotation à gauche
+                                                             de l'Evalbot  
+  113 0000005E         rotleft
+  114 0000005E F7FF FFFE       BL               MOTEUR_DROIT_ON
+  115 00000062 F7FF FFFE       BL               MOTEUR_GAUCHE_ON
+  116 00000066 F7FF FFFE       BL               MOTEUR_DROIT_AVANT
+  117 0000006A F7FF FFFE       BL               MOTEUR_GAUCHE_ARRIERE
+  118 0000006E         
+  119 0000006E 4F08            ldr              r7,= GPIO_PORTD_BASE + (PORT67<
+
+
+
+ARM Macro Assembler    Page 4 
+
+
+<2)
+  120 00000070         
+  121 00000070         ; Lire dans R4 l'etat des SW
+  122 00000070 683C            ldr              r4, [r7]
+  123 00000072         
+  124 00000072         ;Test de l'état de SW2
+  125 00000072         
+  126 00000072 2C80            cmp              r4,#0x80
+  127 00000074 D0E4            beq              rotright
+  128 00000076 F000 F801       BL               WAIT
+  129 0000007A E7D2            b                loop
+  130 0000007C         
+  131 0000007C         
+  132 0000007C         
+  133 0000007C 4905    WAIT    ldr              r1, =0xAFFFFF
+  134 0000007E 3901    wait1   subs             r1, #1
+  135 00000080 D1FD            bne              wait1
+  136 00000082 4770            BX               LR
+  137 00000084         
+  138 00000084         
+  139 00000084         
+  140 00000084                 END
+              400FE108 
+              4002451C 
+              40024510 
+              4002400C 
+              00AFFFFF 
+Command Line: --debug --xref --cpu=Cortex-M3 --apcs=interwork --depend=.\exo8.d
+ -o.\exo8.o -IC:\Keil\ARM\RV31\INC -IC:\Keil\ARM\CMSIS\Include -IC:\Keil\ARM\In
+c\Luminary --predefine="__EVAL SETA 1" --predefine="__MICROLIB SETA 1" --list=.
+\exo8.lst exo8.s
